@@ -1,33 +1,25 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(QuestionarioApp());
 }
 
-// Classe principal que representa o aplicativo
-class MyApp extends StatelessWidget {
+class QuestionarioApp extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Questionnaire(), // Define o Questionnaire como a tela inicial
-    );
-  }
+  _QuestionarioAppState createState() => _QuestionarioAppState();
 }
 
-// Widget de questionário que mantém o estado
-class Questionnaire extends StatefulWidget {
-  @override
-  _QuestionnaireState createState() => _QuestionnaireState();
-}
+class _QuestionarioAppState extends State<QuestionarioApp> {
+  int respostaAtual = 0;
+  bool resposta = false;
+  bool mostrarVeredito = false;
+  int imagemAtual = 0;
+  bool eRelacionamentoAbusivo = false;
 
-class _QuestionnaireState extends State<Questionnaire> {
-  int currentQuestion = 0; // Número da pergunta atual
-  bool answer = false; // Resposta do usuário (true para Sim, false para Não)
-  bool showVerdict = false; // Flag para mostrar o veredito final
-  List<String> thermometerParts = [
+  List<String> partesDoTermometro = [
     'assets/00.png',
     'assets/01.png',
-    'assets/02.png', // Imagem do início do termômetro
+    'assets/02.png',
     'assets/03.png',
     'assets/04.png',
     'assets/05.png',
@@ -46,120 +38,100 @@ class _QuestionnaireState extends State<Questionnaire> {
     'assets/18.png',
     'assets/19.png',
     'assets/20.png',
+  ];
 
-    // Substitua pelos URLs ou caminhos reais das imagens
-    // Adicione mais imagens conforme necessário
-  ]; // Lista de caminhos para as partes do termômetro
-
-  // Função para lidar com as respostas do usuário
-  void answerQuestion(bool userAnswer) {
+  respostaDaPergunta(bool respostaUsuario) {
     setState(() {
-      answer = userAnswer; // Atualiza a resposta do usuário
-      currentQuestion++; // Move para a próxima pergunta
-      if (currentQuestion == thermometerParts.length) {
-        showVerdict =
-            true; // Se todas as perguntas foram respondidas, exibe o veredito final
+      resposta = respostaUsuario;
+      if (resposta == true) {
+        eRelacionamentoAbusivo = true;
+        imagemAtual++;
+      }
+      respostaAtual++;
+      if (respostaAtual == 20) {
+        mostrarVeredito = true;
       }
     });
   }
 
+  List<String> perguntas = [
+    'Pergunta 0: ?',
+    'Pergunta 1: ?',
+    'Pergunta 2: ?',
+    'Pergunta 3: ?',
+    'Pergunta 4: ?',
+    'Pergunta 5: ?',
+    'Pergunta 6: ?',
+    'Pergunta 7: ?',
+    'Pergunta 8: ?',
+    'Pergunta 9: ?',
+    'Pergunta 10: ?',
+    'Pergunta 11: ?',
+    'Pergunta 12: ?',
+    'Pergunta 13: ?',
+    'Pergunta 14: ?',
+    'Pergunta 15: ?',
+    'Pergunta 16: ?',
+    'Pergunta 17: ?',
+    'Pergunta 18: ?',
+    'Pergunta 19: ?',
+    'Pergunta 20: ?',
+
+    // Adicione as perguntas restantes aqui
+  ];
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Questionnaire App'),
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('Questionnaire App'),
+        ),
+        body: Center(
+          child: mostrarVeredito
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      partesDoTermometro[imagemAtual],
+                      height: 600,
+                      width: 100,
+                    ),
+                    Text('Veredito Final:'),
+                    Text(eRelacionamentoAbusivo
+                        ? 'Relacionamento Abusivo'
+                        : 'Relacionamento Saudável'),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      imagemAtual <= 20 && imagemAtual != 0
+                          ? partesDoTermometro[imagemAtual + 1]
+                          : partesDoTermometro[imagemAtual],
+                      height: 600,
+                      width: 100,
+                    ),
+                    SizedBox(width: 20),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(perguntas[respostaAtual]),
+                        ElevatedButton(
+                          onPressed: () => respostaDaPergunta(true),
+                          child: Text('Sim'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => respostaDaPergunta(false),
+                          child: Text('Não'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+        ),
       ),
-      body: Center(
-        child: showVerdict
-            ? VerdictWidget(answer: answer, thermometerParts: thermometerParts)
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  answer
-                      ? ThermometerWidget(
-                          imagePath: thermometerParts[currentQuestion])
-                      : ThermometerWidget(
-                          imagePath: thermometerParts[
-                              currentQuestion != 0 ? currentQuestion - 1 : 0]),
-                  SizedBox(width: 20), // Espaço entre o termômetro e a pergunta
-                  QuestionWidget(
-                    questionNumber: currentQuestion + 1,
-                    onAnswer: answerQuestion,
-                  ),
-                ],
-              ),
-      ),
-    );
-  }
-}
-
-// Widget para exibir a imagem do termômetro
-class ThermometerWidget extends StatelessWidget {
-  final String imagePath;
-
-  ThermometerWidget({required this.imagePath});
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset(
-      imagePath,
-      height: 600,
-      width: 100,
-    );
-  }
-}
-
-// Widget para exibir uma pergunta
-class QuestionWidget extends StatelessWidget {
-  final int questionNumber;
-  final Function(bool) onAnswer;
-
-  QuestionWidget({required this.questionNumber, required this.onAnswer});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text('Pergunta $questionNumber: Você concorda?'),
-        ElevatedButton(
-          onPressed: () => onAnswer(true),
-          child: Text('Sim'),
-        ),
-        ElevatedButton(
-          onPressed: () => onAnswer(false),
-          child: Text('Não'),
-        ),
-      ],
-    );
-  }
-}
-
-// Widget para exibir o veredito final
-class VerdictWidget extends StatelessWidget {
-  final bool answer;
-  final List<String> thermometerParts;
-
-  VerdictWidget({required this.answer, required this.thermometerParts});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text('Veredito Final:'),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: thermometerParts.map((imagePath) {
-            return Image.asset(
-              imagePath,
-              height: 20,
-              width: 10,
-            );
-          }).toList(),
-        ),
-        Text(answer ? 'Relacionamento Abusivo' : 'Relacionamento Saudável'),
-      ],
     );
   }
 }
